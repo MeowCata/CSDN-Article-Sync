@@ -611,10 +611,63 @@ else if(op=='a'){
 	cout<<endl;
 }
 ```
+##### 6.一些完善（更新于4.30）
+①. **Ai输入坐标的改进**
+这个很简单，只需控制双重循环的范围即可
+![在这里插入图片描述](https://img-blog.csdnimg.cn/direct/3d35796be8654d07bc34a641938beebd.png)
+上图为Ai代码的改进
+②. **视觉效果**
+一、进度条
+一开始我选用了这种：
+```cpp
+for(int i=0;i<=100;i+=10){
+	cout<<i<<"%... ";
+	Sleep(random(row*col*7));
+}
+```
+经过简易的改进，我们可以写出这种：
+```cpp
+for(int i=1;i<=10;i++){
+	int x=i;
+	cout<<"[";
+	for(int j=1;j<=x;j++) cout<<"*";
+	for(int g=1;g<=(10-x);g++) cout<<' ';
+	cout<<"] "<<x*10<<"%"<<'\n';
+	Sleep(random(row*col*3));
+}
+```
+效果如下：
+![在这里插入图片描述](https://img-blog.csdnimg.cn/direct/74d322302e1c454ebabc5568a1bb5e0e.png)
+二、打字效果
+这个也简单，只需加入Sleep代码即可
+```cpp
+void print(string s){ //100% created originally
+	//getline(cin,s);
+	char ch[s.size()];
+	for(int i=0;i<s.size();i++) ch[i]=s[i];
+	for(int i=0;i<s.size();i++){
+		cout<<ch[i];
+		Sleep(70);
+	} 	
+}
+```
+调用函数，参数为要输出的字符串即可
+三、~~作弊~~ 调试
+运算符为`h`,同样加上x,y坐标，表示要输出的范围
+```cpp
+else if(op=='h'){
+	firstClick=false;
+	for(int i=1;i<=x;i++){
+		for(int j=1;j<=y;j++){
+			cout<<ui[i][j]<<' ';
+		}cout<<endl;
+	}cout<<'\n';	
+}
+```
+
 **游戏的完整代码如下：**
 ```cpp
 //Made by DingDang 2024-2
-//AntiCheat: Grim v7~
 //UTF-8 Coding
 //Compile Mode:C++11 or higher version System: Win7+ 64x
 #include<bits/stdc++.h>
@@ -636,20 +689,32 @@ Operator description:
 */
 using namespace std;
 
+void print(string s){ //100% created originally
+	//getline(cin,s);
+	char ch[s.size()];
+	for(int i=0;i<s.size();i++) ch[i]=s[i];
+	for(int i=0;i<s.size();i++){
+		cout<<ch[i];
+		Sleep(70);
+	} 	
+}
+
 int ui[105][105]={0},b[105][105]={0}; 
 int lives,mine_sum;
 bool firstClick=true;
 int row,col;
 int k=0,k1=0;
-	
+
 int main(){
 	srand(time(NULL)); //random seed
 	//system("color 1B");
 	system("title MineSweeper");//set window title
-	system("mode con cols=50 lines=30");//set window size
-	system("echo [console]variate initialization succeeded");
-	cout<<"inputting|format:<ROW> <COL> <HEALTH> <MINE_SUM>]\n";
-	cout<<"example: 10 10 3 10\n";
+	//system("mode con cols=50 lines=30");//set window size
+	system("echo [console]variables initialization succeeded");
+	cout<<'\n';
+	Sleep(200);
+	cout<<"inputting|format:<HEIGHT> <WIDTH> <HEALTH> <MINE_SUM>\n";//col width row height
+	print("example: 10 10 3 10");cout<<'\n';
 	
 	cin>>row>>col>>lives>>mine_sum;
 	
@@ -659,6 +724,20 @@ int main(){
 			cout<<"failed to process data, please reset map size/health/mine_sum\n";
 			cin>>row>>col>>lives>>mine_sum;
 	}
+	print("generating map...");cout<<'\n';
+	/*for(int i=0;i<=100;i+=10){
+		cout<<i<<"%... ";
+		Sleep(random(row*col*7));
+	}*/
+	for(int i=1;i<=10;i++){
+		int x=i;
+		cout<<"[";
+		for(int j=1;j<=x;j++) cout<<"*";
+		for(int g=1;g<=(10-x);g++) cout<<' ';
+		cout<<"] "<<x*10<<"%"<<'\n';
+		Sleep(random(row*col*3));
+	}
+	cout<<'\n'<<'\n';
 	int tempCalc=mine_sum;
 	while(mine_sum){
 		int x=random(row);//a+rand()%b = [a, a+b-1]
@@ -695,12 +774,12 @@ int main(){
 	}*/
 	
 	while(true){
-		for(int i=1;i<=row;i++){
+		/*for(int i=1;i<=row;i++){
 			for(int j=1;j<=col;j++){
 				cout<<ui[i][j]<<' '; //output the numbers
 			}
 			cout<<endl;
-		}cout<<endl; 
+		}cout<<endl; */
 	//for debug
 	
 		for(int i=1;i<=row;i++){
@@ -725,28 +804,30 @@ int main(){
 			cin>>op>>x>>y;continue;
 		}
 		
+		
 		if(op=='q'){
 			if(ui[x][y]==9){//losing
 				system("cls");
 				if(firstClick){
 					firstClick=false;
 					b[x][y]=2;
+					k++;k1++;
 					continue;
+				}else{
+					if(b[x][y]==2) continue;//anti-blood on a flag
+					lives--;
+					system("color 47");
+					print("oops! you just clicked a mine");cout<<endl<<endl;
+					Sleep(200);
+					system("color 07");
+					if(lives==0){
+						print("You Lose!");
+						return 0;
+					}
+					//auto-flag after one death
+					b[x][y]=2;
+					k++;k1++;
 				}
-				if(b[x][y]==2) continue;//anti-blood on a flag
-				lives--;
-				system("color 47");
-				cout<<"oops! you just clicked a mine"<<endl<<endl;
-				Sleep(200);
-				system("color 07");
-				if(lives==0){
-					cout<<"You Lose!";
-					return 0;
-				}
-				b[x][y]=2;//auto-flag after one death
-				continue;
-				scanf("%d");
-				return 0;
 			}
 			else{
 				firstClick=false;
@@ -791,22 +872,14 @@ int main(){
 		}
 		else if(op=='a'){
 			firstClick=false;
-			cout<<"ai-mode enabled"<<endl;
-			int x1,y1;
-			cout<<"start-point coordinates have been entered\n please enter the end-point coordinates\n";
-			cin>>x1>>y1; //input judging
-			while(x1<=0||y1<=0||x1>row||y1>col){
-				cout<<"invalid input\n";
-				cin>>x1>>y1;
-			}
-			cout<<"looking for mines in: "<<'('<<x<<','<<y<<')'<<'('<<x1<<','<<y1<<')'<<endl; 
+			print("ai-mode enabled");cout<<'\n';
+			cout<<"looking for mines in: "<<'('<<x<<','<<y<<')'<<endl; 
 			int new_mine=0;
-			for(int i=x;i<=x1;i++){
-				for(int j=y;j<=y1;j++){
+			for(int i=1;i<=x;i++){
+				for(int j=1;j<=y;j++){
 					if(ui[i][j]==9){
-						k++;
-						k1++;
 						if(b[i][j]!=2){
+							k++;k1++;
 							b[i][j]=2;
 							new_mine++;
 						}
@@ -823,8 +896,8 @@ int main(){
 				cout<<"outputting..."<<'\n';
 				Sleep(1000);
 				system("cls");
-				for(int i=x;i<=x1;i++){
-					for(int j=y;j<=y1;j++){
+				for(int i=1;i<=x;i++){
+					for(int j=1;j<=y;j++){
 						cout<<ui[i][j]<<' ';
 					}cout<<endl;
 				}cout<<endl;
@@ -832,12 +905,19 @@ int main(){
 			}
 			Sleep(1500);
 			cout<<endl;
+		}else if(op=='h'){
+			firstClick=false;
+			for(int i=1;i<=x;i++){
+				for(int j=1;j<=y;j++){
+					cout<<ui[i][j]<<' ';
+				}cout<<endl;
+			}cout<<'\n';	
 		}else{
-			cout<<"invalid operator\n";continue;
+			print("invalid operator");cout<<'\n';continue;
 		}
 		if(k==tempCalc && k==k1){//winning
-			cout<<"You Win !";
-			for(int i=1;i<=5;i++){
+			print("You Win!");
+			for(int i=1;i<=2;i++){
 				system("color 1a");
 				Sleep(100);
 				system("color 2b");
@@ -856,15 +936,18 @@ int main(){
 } 
 ```
 **如果有任何bug，请在评论区指出，感谢各位！**
+
 ### 玩法介绍
 * 程序会提示输入：`<ROW> <COL> <HEALTH> <MINE_SUM>`，分别代表行数，列数（均小于等于30），生命值（小于行数×列数），雷数（小于行数×列数），有数据判断
-* 操作符 **`q p c a`** +`X,Y`分别代表：在 **(x,y)**   翻开/插旗/撤销插旗/使用Ai，以下为详细介绍
+* 操作符 **`q p c a`** +`X,Y`分别代表：在 **(x,y)** ²(见注释)  翻开/插旗/撤销插旗/使用Ai（作为起始点）³，以下为详细介绍
 * q x y: 翻开位于 **(x,y)** 的方格，如果这是你的首次点击并且踩到雷，程序会自动帮你插旗并不扣血，如果不是，扣一滴血，自动插旗；如果当前格为空白（0），自动帮你翻开周围8格内所有的空白
 * p x y: 在 **(x,y)** 插旗，表示你认为这里为雷，旗子没有数量限制，但是**只有插对地方且数量正确才会胜利**
 * c x y: 撤销在 **(x,y)** 的插旗，如果该位置没有旗则不会操作
-* a x y：将Ai排雷的起始点设置为 **(x,y)** ，再输入 **(x1,y1)** （具体坐标说明见下方补充部分），Ai将在这个范围内**自动排雷**，并为你插旗；你也可以选择输出这个范围内的数字
+* a x y：在 **(x,y)** 排雷并插旗
+* h x y:  在 **(x,y)** 的范围内输出矩阵
+* NOTICE: 只需输入Ai终点，会自动在 **(1,1)** 到终点坐标排雷，更加便捷
 
 **Github开源地址：[这里](https://github.com/MeowCata/C-MineE/blob/main/MineE.cpp)，上不去的同学试试`FastGithub`**
 
  感谢**胡老师**在我coding过程中给予的帮助和指导
- 好了，这就是本篇文章的全部内容（截止到2024/2/15），欢迎各位大佬指点！我们下期再见
+ 好了，这就是本篇文章的全部内容（截止到2024/4/30），欢迎各位大佬指点！我们下期再见
